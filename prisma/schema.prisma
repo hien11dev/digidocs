@@ -1,0 +1,572 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id                String          @id @db.Uuid
+  first_name        String          @db.VarChar()
+  last_name         String?         @db.VarChar()
+  email             String          @unique @db.VarChar()
+  password          String          @db.VarChar()
+  is_verified_email Boolean         @default(false)
+  avatar            String?         @db.VarChar()
+  phone             String?         @db.VarChar(15)
+  gender            String?         @db.VarChar()
+  date_of_birth     DateTime?       @db.Date()
+  created_at        DateTime        @default(now())
+  updated_at        DateTime        @updatedAt
+  deleted_at        DateTime?
+  organizations     organizations[]
+  employees         employees[]
+  socials           socials[]
+  social_likes      social_likes[]
+  comments          comments[]
+  user_role         user_role[]
+}
+
+enum user_status {
+  active
+  blocked
+  deleted
+}
+
+model organizations {
+  id               String             @id @db.Uuid
+  user_id          String             @db.Uuid
+  user             users              @relation(fields: [user_id], references: [id])
+  name             String             @db.VarChar()
+  avatar           String?            @db.VarChar()
+  street           String?            @db.VarChar()
+  city             String?            @db.VarChar()
+  state            String?            @db.VarChar()
+  postal_code      String?            @db.VarChar()
+  country          String?            @db.VarChar()
+  abn              String?            @db.VarChar()
+  status           String             @db.VarChar()
+  trial_ends_at    DateTime           @db.Timestamp()
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+  employees        employees[]
+  onboarding_steps onboarding_steps[]
+  socials          socials[]
+  roles            roles[]
+  configurations   configurations[]
+  rewards          rewards[]
+  surveys          surveys[]
+  subscriptions    subscriptions[]
+}
+
+enum organization_status {
+  active
+  block
+}
+
+model subscription_plans {
+  id           String         @id @db.Uuid
+  title        String         @db.VarChar()
+  description  String         @db.Text
+  duration     Int            @db.Integer
+  capacity     Int            @db.Integer
+  price        Decimal        @db.Decimal(10, 2)
+  product_id   String         @unique @db.VarChar()
+  price_id     String         @unique @db.VarChar()
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  transactions transactions[]
+}
+
+model employees {
+  id                       String                     @id @db.Uuid
+  user_id                  String                     @db.Uuid
+  user                     users                      @relation(fields: [user_id], references: [id])
+  organization_id          String                     @db.Uuid
+  organization             organizations              @relation(fields: [organization_id], references: [id])
+  deparment_id             String                     @db.Uuid
+  deparment                departments                @relation(fields: [deparment_id], references: [id])
+  position_id              String                     @db.Uuid
+  position                 positions                  @relation(fields: [position_id], references: [id])
+  status                   String                     @db.VarChar()
+  joined_at                DateTime?                  @db.Timestamp()
+  created_at               DateTime                   @default(now())
+  deleted_at               DateTime?
+  updated_at               DateTime                   @updatedAt
+  is_completed_oboarding   Boolean                    @default(false)
+  completed_steps          completed_steps[]
+  employee_job             employee_job[]
+  socials                  socials[]
+  social_likes             social_likes[]
+  comments                 comments[]
+  user_role                user_role[]
+  configuration_changelogs configuration_changelogs[]
+  given_points             point_histories[]          @relation("giver")
+  received_points          point_histories[]          @relation("receiver")
+  like_histories           like_histories[]           @relation("liker")
+  liked_by_histories       like_histories[]           @relation("receiver")
+  redeems                  redeems[]
+  answers                  answers[]
+}
+
+enum employee_status {
+  pending
+  active
+  blocked
+  deleted
+}
+
+model departments {
+  id          String      @id @db.Uuid
+  name        String      @db.VarChar()
+  description String      @db.Text
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  employees   employees[]
+  jobs        jobs[]
+}
+
+model positions {
+  id          String      @id @db.Uuid
+  name        String      @db.VarChar()
+  description String      @db.Text
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+  employees   employees[]
+  jobs        jobs[]
+}
+
+model onboarding_steps {
+  id                        String                      @id @db.Uuid
+  organization_id           String                      @db.Uuid
+  organization              organizations               @relation(fields: [organization_id], references: [id])
+  name                      String                      @db.VarChar()
+  step                      Int                         @db.Integer
+  created_at                DateTime                    @default(now())
+  updated_at                DateTime                    @updatedAt
+  completed_steps           completed_steps[]
+  onboarding_configurations onboarding_configurations[]
+}
+
+model onboarding_configurations {
+  id                               String                             @id @db.Uuid
+  onboarding_step_id               String                             @db.Uuid
+  onboarding_step                  onboarding_steps                   @relation(fields: [onboarding_step_id], references: [id])
+  field                            String                             @db.VarChar()
+  type                             String                             @db.VarChar()
+  created_at                       DateTime                           @default(now())
+  updated_at                       DateTime                           @updatedAt
+  onboarding_configuration_options onboarding_configuration_options[]
+  completed_steps                  completed_steps[]
+}
+
+model onboarding_configuration_options {
+  id                          String                    @id @db.Uuid
+  onboarding_configuration_id String                    @db.Uuid
+  onboarding_configuration    onboarding_configurations @relation(fields: [onboarding_configuration_id], references: [id])
+  value                       String                    @db.VarChar()
+  created_at                  DateTime                  @default(now())
+  updated_at                  DateTime                  @updatedAt
+  completed_step_options      completed_step_options[]
+}
+
+model completed_steps {
+  id                          String                    @id @db.Uuid
+  onboarding_step_id          String                    @db.Uuid
+  onboarding_step             onboarding_steps          @relation(fields: [onboarding_step_id], references: [id])
+  onboarding_configuration_id String                    @db.Uuid
+  onboarding_configuration    onboarding_configurations @relation(fields: [onboarding_configuration_id], references: [id])
+  employee_id                 String                    @db.Uuid
+  employee                    employees                 @relation(fields: [employee_id], references: [id])
+  value                       String?                   @db.VarChar()
+  created_at                  DateTime                  @default(now())
+  updated_at                  DateTime                  @updatedAt
+  completed_step_options      completed_step_options[]
+}
+
+model completed_step_options {
+  onboarding_configuration_option_id String                           @db.Uuid
+  onboarding_configuration_option    onboarding_configuration_options @relation(fields: [onboarding_configuration_option_id], references: [id])
+  completed_step_id                  String                           @db.Uuid
+  completed_step                     completed_steps                  @relation(fields: [completed_step_id], references: [id])
+
+  @@id([onboarding_configuration_option_id, completed_step_id])
+}
+
+model jobs {
+  id            String         @id @db.Uuid
+  department_id String         @db.Uuid
+  department    departments    @relation(fields: [department_id], references: [id])
+  position_id   String         @db.Uuid
+  position      positions      @relation(fields: [position_id], references: [id])
+  title         String         @db.VarChar()
+  description   String         @db.Text
+  status        String         @db.VarChar()
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  employee_jobs employee_job[]
+}
+
+enum job_status {
+  open
+  close
+}
+
+model employee_job {
+  id          String    @id @db.Uuid
+  employee_id String    @db.Uuid
+  employee    employees @relation(fields: [employee_id], references: [id])
+  job_id      String    @db.Uuid
+  job         jobs      @relation(fields: [job_id], references: [id])
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@unique([employee_id, job_id])
+}
+
+model socials {
+  id                  String                @id @db.Uuid
+  social_type         String                @db.VarChar()
+  content_type        String                @db.VarChar()
+  organization_id     String?               @db.Uuid
+  organization        organizations?        @relation(fields: [organization_id], references: [id])
+  employee_id         String?               @db.Uuid
+  employee            employees?            @relation(fields: [employee_id], references: [id])
+  user_id             String                @db.Uuid
+  user                users                 @relation(fields: [user_id], references: [id])
+  content             String                @db.VarChar()
+  description         String                @db.Text
+  color               String?               @db.VarChar()
+  backgroud           String?               @db.VarChar()
+  status              String                @db.VarChar()
+  published_at        DateTime?             @db.Timestamp()
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
+  hashtag_or_category hashtag_or_category[]
+  social_likes        social_likes[]
+  comments            comments[]
+}
+
+enum social_status {
+  draft
+  publishsed
+  unpublished
+}
+
+enum social_type {
+  feed
+  news
+  wellness_activity
+}
+
+enum social_content_type {
+  text
+  image
+  video
+  audio
+}
+
+model catalogs {
+  id                  String                @id @db.Uuid
+  name                String                @unique @db.VarChar()
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
+  hashtag_or_category hashtag_or_category[]
+}
+
+model hashtag_or_category {
+  social_id  String   @db.Uuid
+  social     socials  @relation(fields: [social_id], references: [id])
+  catalog_id String   @db.Uuid
+  catalog    catalogs @relation(fields: [catalog_id], references: [id])
+
+  @@id([social_id, catalog_id])
+}
+
+model social_likes {
+  id          String     @id @db.Uuid
+  user_id     String     @db.Uuid
+  user        users      @relation(fields: [user_id], references: [id])
+  employee_id String?    @db.Uuid
+  employee    employees? @relation(fields: [employee_id], references: [id])
+  social_id   String     @db.Uuid
+  social      socials    @relation(fields: [social_id], references: [id])
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+}
+
+model comments {
+  id          String     @id @db.Uuid
+  user_id     String     @db.Uuid
+  user        users      @relation(fields: [user_id], references: [id])
+  employee_id String?    @db.Uuid
+  employee    employees? @relation(fields: [employee_id], references: [id])
+  social_id   String     @db.Uuid
+  social      socials    @relation(fields: [social_id], references: [id])
+  content     String     @db.VarChar()
+  parent_id   String     @db.Uuid
+  parent      comments   @relation(fields: [parent_id], references: [id], name: "replies")
+  replies     comments[] @relation("replies")
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+}
+
+model roles {
+  id              String            @id @db.Uuid
+  name            String            @unique
+  organization_id String?           @db.Uuid
+  organization    organizations?    @relation(fields: [organization_id], references: [id])
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  permission_role permission_role[]
+  user_role       user_role[]
+}
+
+model permissions {
+  id              String            @id @db.Uuid
+  name            String            @db.VarChar()
+  guard           String            @db.VarChar()
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  permission_role permission_role[]
+}
+
+enum permission_guard {
+  admin
+  bussiness
+}
+
+model permission_role {
+  permission_id String      @db.Uuid
+  permission    permissions @relation(fields: [permission_id], references: [id])
+  role_id       String      @db.Uuid
+  role          roles       @relation(fields: [role_id], references: [id])
+
+  @@id([role_id, permission_id])
+}
+
+model user_role {
+  id          String     @id @db.Uuid
+  role_id     String     @db.Uuid
+  role        roles      @relation(fields: [role_id], references: [id])
+  user        users      @relation(fields: [user_id], references: [id])
+  employee    employees? @relation(fields: [employee_id], references: [id])
+  user_id     String     @db.Uuid
+  employee_id String?    @db.Uuid
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+
+  @@unique([role_id, user_id, employee_id])
+}
+
+model configurations {
+  id                       String                     @id @db.Uuid
+  organization_id          String                     @db.Uuid
+  organization             organizations              @relation(fields: [organization_id], references: [id])
+  like_to_points           Int                        @db.Integer
+  created_at               DateTime                   @default(now())
+  updated_at               DateTime                   @updatedAt
+  configuration_changelogs configuration_changelogs[]
+}
+
+model configuration_changelogs {
+  id               String         @id @db.Uuid
+  configuration_id String         @db.Uuid
+  configuration    configurations @relation(fields: [configuration_id], references: [id])
+  employee_id      String         @db.Uuid
+  employee         employees      @relation(fields: [employee_id], references: [id])
+  like_to_points   Int            @db.Integer
+  created_at       DateTime       @default(now())
+  updated_at       DateTime       @updatedAt
+}
+
+model point_histories {
+  id          String    @id @db.Uuid
+  giver_id    String    @db.Uuid
+  giver       employees @relation(fields: [giver_id], references: [id], name: "giver")
+  receiver_id String    @db.Uuid
+  receiver    employees @relation(fields: [receiver_id], references: [id], name: "receiver")
+  reason      String    @db.VarChar()
+  point       Int       @db.Integer
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model like_histories {
+  id          String    @id @db.Uuid
+  liker_id    String    @db.Uuid
+  liker       employees @relation(fields: [liker_id], references: [id], name: "liker")
+  reason      String    @db.VarChar()
+  receiver_id String    @db.Uuid
+  receiver    employees @relation(fields: [receiver_id], references: [id], name: "receiver")
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model rewards {
+  id              String        @id @db.Uuid
+  organization_id String        @db.Uuid
+  organization    organizations @relation(fields: [organization_id], references: [id])
+  title           String        @db.VarChar()
+  description     String        @db.Text
+  code            String        @db.VarChar()
+  point           Int           @db.Integer
+  limit           Int           @db.Integer
+  expiries_at     DateTime      @db.Timestamp()
+  status          String        @db.VarChar()
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  redeems         redeems[]
+}
+
+enum redeem_status {
+  active
+  draft
+  expired
+}
+
+model redeems {
+  id          String    @id @db.Uuid
+  employee_id String    @db.Uuid
+  employee    employees @relation(fields: [employee_id], references: [id])
+  reward_id   String    @db.Uuid
+  reward      rewards   @relation(fields: [reward_id], references: [id])
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}
+
+model surveys {
+  id                String             @id @db.Uuid
+  organization_id   String             @db.Uuid
+  organization      organizations      @relation(fields: [organization_id], references: [id])
+  title             String             @db.VarChar()
+  start_date        DateTime           @db.Date
+  end_date          DateTime?          @db.Date
+  required          Boolean
+  next_scheduled_at DateTime?          @db.Timestamp()
+  created_at        DateTime           @default(now())
+  updated_at        DateTime           @updatedAt
+  question_survey   question_survey[]
+  schedules         schedules[]
+  survey_schedules  survey_schedules[]
+  answers           answers[]
+}
+
+model questions {
+  id              String            @id @db.Uuid
+  text            String            @db.VarChar()
+  type            String            @db.VarChar()
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  options         options[]
+  question_survey question_survey[]
+  answers         answers[]
+}
+
+model options {
+  id            String          @id @db.Uuid
+  question_id   String          @db.Uuid
+  question      questions       @relation(fields: [question_id], references: [id])
+  value         String          @db.VarChar()
+  order         Int             @db.Integer
+  created_at    DateTime        @default(now())
+  updated_at    DateTime        @updatedAt
+  answer_option answer_option[]
+
+  @@unique([question_id, value])
+  @@unique([question_id, order])
+}
+
+model question_survey {
+  survey_id   String    @db.Uuid
+  survey      surveys   @relation(fields: [survey_id], references: [id])
+  question_id String    @db.Uuid
+  question    questions @relation(fields: [question_id], references: [id])
+
+  @@id([survey_id, question_id])
+}
+
+model schedules {
+  id          String   @id @db.Uuid
+  survey_id   String   @db.Uuid
+  survey      surveys  @relation(fields: [survey_id], references: [id])
+  type        String   @db.VarChar()
+  year        String   @db.VarChar(4)
+  month       String   @db.VarChar(2)
+  day         String   @db.VarChar(2)
+  day_of_week String   @db.VarChar(1)
+  hour        String   @db.VarChar(2)
+  minute      String   @db.VarChar(2)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model survey_schedules {
+  id           String    @id @db.Uuid
+  survey_id    String    @db.Uuid
+  survey       surveys   @relation(fields: [survey_id], references: [id])
+  scheduled_at DateTime  @db.Timestamp()
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  answers      answers[]
+}
+
+model answers {
+  id                 String           @id @db.Uuid
+  question_id        String           @db.Uuid
+  question           questions        @relation(fields: [question_id], references: [id])
+  response           String?          @db.Text
+  employee_id        String           @db.Uuid
+  employee           employees        @relation(fields: [employee_id], references: [id])
+  survey_id          String           @db.Uuid
+  survey             surveys          @relation(fields: [survey_id], references: [id])
+  survey_schedule_id String           @db.Uuid
+  schedule           survey_schedules @relation(fields: [survey_schedule_id], references: [id])
+  created_at         DateTime         @default(now())
+  updated_at         DateTime         @updatedAt
+  answer_option      answer_option[]
+}
+
+model answer_option {
+  answer_id String  @db.Uuid
+  answer    answers @relation(fields: [answer_id], references: [id])
+  option_id String  @db.Uuid
+  option    options @relation(fields: [option_id], references: [id])
+
+  @@id([answer_id, option_id])
+}
+
+model subscriptions {
+  id                   String         @id @db.Uuid
+  organization_id      String         @db.Uuid
+  organization         organizations  @relation(fields: [organization_id], references: [id])
+  plan_id              String
+  status               String
+  current_period_start DateTime
+  current_period_end   DateTime
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  transactions         transactions[]
+}
+
+enum subscription_status {
+  active
+  canceled
+  past_due
+  unpaid
+}
+
+model transactions {
+  id                   String              @id @db.Uuid
+  subscription_id      String              @db.Uuid
+  subscription         subscriptions       @relation(fields: [subscription_id], references: [id])
+  plan_id              String
+  payment_amount       Float
+  payment_date         DateTime
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  subscription_plans   subscription_plans? @relation(fields: [subscription_plansId], references: [id])
+  subscription_plansId String?             @db.Uuid
+}

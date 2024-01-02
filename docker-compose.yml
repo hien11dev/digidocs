@@ -1,0 +1,25 @@
+version: '3.9'
+
+name: zenithwork
+
+services:
+  db:
+    container_name: db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=zenithwork
+    ports:
+      - 5432:5432
+    networks:
+      - zenithwork
+    volumes:
+      - zenithwork_db:/var/lib/postgresql/data
+
+volumes:
+  zenithwork_db:
+
+networks:
+  zenithwork:
