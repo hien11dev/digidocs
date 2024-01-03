@@ -1,0 +1,36 @@
+version: '3.9'
+
+name: zenithwork
+
+services:
+  mysql:
+    container_name: mysql
+    image: mysql:8
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=notSecureChangeMe
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=password
+      - MYSQL_DATABASE=zenithwork
+    ports:
+      - 3306:3306
+    networks:
+      - zenithwork
+    volumes:
+      - zenithwork:/var/lib/postgresql/data
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin:fpm-alpine
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+    networks:
+      - zenithwork
+
+volumes:
+  zenithwork:
+
+networks:
+  zenithwork:

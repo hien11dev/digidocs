@@ -28,18 +28,22 @@ CREATE TYPE "redeem_status" AS ENUM ('active', 'draft', 'expired');
 -- CreateEnum
 CREATE TYPE "subscription_status" AS ENUM ('active', 'canceled', 'past_due', 'unpaid');
 
+-- CreateEnum
+CREATE TYPE "transaction_status" AS ENUM ('succeeded', 'pending', 'failed', 'refunded', 'canceled');
+
 -- CreateTable
 CREATE TABLE "users" (
     "id" UUID NOT NULL,
-    "first_name" VARCHAR NOT NULL,
-    "last_name" VARCHAR,
-    "email" VARCHAR NOT NULL,
-    "password" VARCHAR NOT NULL,
+    "first_name" VARCHAR(255) NOT NULL,
+    "last_name" VARCHAR(255),
+    "email" VARCHAR(255) NOT NULL,
+    "password" VARCHAR(255) NOT NULL,
     "is_verified_email" BOOLEAN NOT NULL DEFAULT false,
-    "avatar" VARCHAR,
+    "avatar" VARCHAR(255),
     "phone" VARCHAR(15),
-    "gender" VARCHAR,
+    "gender" VARCHAR(255),
     "date_of_birth" DATE,
+    "status" "user_status" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
@@ -51,15 +55,15 @@ CREATE TABLE "users" (
 CREATE TABLE "organizations" (
     "id" UUID NOT NULL,
     "user_id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
-    "avatar" VARCHAR,
-    "street" VARCHAR,
-    "city" VARCHAR,
-    "state" VARCHAR,
-    "postal_code" VARCHAR,
-    "country" VARCHAR,
-    "abn" VARCHAR,
-    "status" VARCHAR NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "avatar" VARCHAR(255),
+    "street" VARCHAR(255),
+    "city" VARCHAR(255),
+    "state" VARCHAR(255),
+    "postal_code" VARCHAR(255),
+    "country" VARCHAR(255),
+    "abn" VARCHAR(255),
+    "status" "organization_status" NOT NULL,
     "trial_ends_at" TIMESTAMP NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -70,13 +74,13 @@ CREATE TABLE "organizations" (
 -- CreateTable
 CREATE TABLE "subscription_plans" (
     "id" UUID NOT NULL,
-    "title" VARCHAR NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
     "duration" INTEGER NOT NULL,
     "capacity" INTEGER NOT NULL,
     "price" DECIMAL(10,2) NOT NULL,
-    "product_id" VARCHAR NOT NULL,
-    "price_id" VARCHAR NOT NULL,
+    "product_id" VARCHAR(255) NOT NULL,
+    "price_id" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -90,7 +94,7 @@ CREATE TABLE "employees" (
     "organization_id" UUID NOT NULL,
     "deparment_id" UUID NOT NULL,
     "position_id" UUID NOT NULL,
-    "status" VARCHAR NOT NULL,
+    "status" "employee_status" NOT NULL,
     "joined_at" TIMESTAMP,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deleted_at" TIMESTAMP(3),
@@ -103,7 +107,7 @@ CREATE TABLE "employees" (
 -- CreateTable
 CREATE TABLE "departments" (
     "id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -114,7 +118,7 @@ CREATE TABLE "departments" (
 -- CreateTable
 CREATE TABLE "positions" (
     "id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -126,7 +130,7 @@ CREATE TABLE "positions" (
 CREATE TABLE "onboarding_steps" (
     "id" UUID NOT NULL,
     "organization_id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
     "step" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -138,8 +142,8 @@ CREATE TABLE "onboarding_steps" (
 CREATE TABLE "onboarding_configurations" (
     "id" UUID NOT NULL,
     "onboarding_step_id" UUID NOT NULL,
-    "field" VARCHAR NOT NULL,
-    "type" VARCHAR NOT NULL,
+    "field" VARCHAR(255) NOT NULL,
+    "type" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -150,7 +154,7 @@ CREATE TABLE "onboarding_configurations" (
 CREATE TABLE "onboarding_configuration_options" (
     "id" UUID NOT NULL,
     "onboarding_configuration_id" UUID NOT NULL,
-    "value" VARCHAR NOT NULL,
+    "value" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -163,7 +167,7 @@ CREATE TABLE "completed_steps" (
     "onboarding_step_id" UUID NOT NULL,
     "onboarding_configuration_id" UUID NOT NULL,
     "employee_id" UUID NOT NULL,
-    "value" VARCHAR,
+    "value" VARCHAR(255),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -183,9 +187,9 @@ CREATE TABLE "jobs" (
     "id" UUID NOT NULL,
     "department_id" UUID NOT NULL,
     "position_id" UUID NOT NULL,
-    "title" VARCHAR NOT NULL,
-    "description" TEXT NOT NULL,
-    "status" VARCHAR NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
+    "description" "job_status" NOT NULL,
+    "status" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -206,16 +210,16 @@ CREATE TABLE "employee_job" (
 -- CreateTable
 CREATE TABLE "socials" (
     "id" UUID NOT NULL,
-    "social_type" VARCHAR NOT NULL,
-    "content_type" VARCHAR NOT NULL,
+    "social_type" "social_type" NOT NULL,
+    "content_type" "social_content_type" NOT NULL,
     "organization_id" UUID,
     "employee_id" UUID,
     "user_id" UUID NOT NULL,
-    "content" VARCHAR NOT NULL,
+    "content" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
-    "color" VARCHAR,
-    "backgroud" VARCHAR,
-    "status" VARCHAR NOT NULL,
+    "color" VARCHAR(255),
+    "backgroud" VARCHAR(255),
+    "status" "social_status" NOT NULL,
     "published_at" TIMESTAMP,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -226,7 +230,7 @@ CREATE TABLE "socials" (
 -- CreateTable
 CREATE TABLE "catalogs" (
     "id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -259,7 +263,7 @@ CREATE TABLE "comments" (
     "user_id" UUID NOT NULL,
     "employee_id" UUID,
     "social_id" UUID NOT NULL,
-    "content" VARCHAR NOT NULL,
+    "content" VARCHAR(255) NOT NULL,
     "parent_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -281,8 +285,8 @@ CREATE TABLE "roles" (
 -- CreateTable
 CREATE TABLE "permissions" (
     "id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
-    "guard" VARCHAR NOT NULL,
+    "name" VARCHAR(255) NOT NULL,
+    "guard" "permission_guard" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -337,7 +341,7 @@ CREATE TABLE "point_histories" (
     "id" UUID NOT NULL,
     "giver_id" UUID NOT NULL,
     "receiver_id" UUID NOT NULL,
-    "reason" VARCHAR NOT NULL,
+    "reason" VARCHAR(255) NOT NULL,
     "point" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -349,7 +353,7 @@ CREATE TABLE "point_histories" (
 CREATE TABLE "like_histories" (
     "id" UUID NOT NULL,
     "liker_id" UUID NOT NULL,
-    "reason" VARCHAR NOT NULL,
+    "reason" VARCHAR(255) NOT NULL,
     "receiver_id" UUID NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -361,13 +365,13 @@ CREATE TABLE "like_histories" (
 CREATE TABLE "rewards" (
     "id" UUID NOT NULL,
     "organization_id" UUID NOT NULL,
-    "title" VARCHAR NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
     "description" TEXT NOT NULL,
-    "code" VARCHAR NOT NULL,
+    "code" VARCHAR(255) NOT NULL,
     "point" INTEGER NOT NULL,
     "limit" INTEGER NOT NULL,
     "expiries_at" TIMESTAMP NOT NULL,
-    "status" VARCHAR NOT NULL,
+    "status" "redeem_status" NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -389,7 +393,7 @@ CREATE TABLE "redeems" (
 CREATE TABLE "surveys" (
     "id" UUID NOT NULL,
     "organization_id" UUID NOT NULL,
-    "title" VARCHAR NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
     "start_date" DATE NOT NULL,
     "end_date" DATE,
     "required" BOOLEAN NOT NULL,
@@ -403,8 +407,8 @@ CREATE TABLE "surveys" (
 -- CreateTable
 CREATE TABLE "questions" (
     "id" UUID NOT NULL,
-    "text" VARCHAR NOT NULL,
-    "type" VARCHAR NOT NULL,
+    "text" VARCHAR(255) NOT NULL,
+    "type" VARCHAR(255) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -415,7 +419,7 @@ CREATE TABLE "questions" (
 CREATE TABLE "options" (
     "id" UUID NOT NULL,
     "question_id" UUID NOT NULL,
-    "value" VARCHAR NOT NULL,
+    "value" VARCHAR(255) NOT NULL,
     "order" INTEGER NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -435,7 +439,7 @@ CREATE TABLE "question_survey" (
 CREATE TABLE "schedules" (
     "id" UUID NOT NULL,
     "survey_id" UUID NOT NULL,
-    "type" VARCHAR NOT NULL,
+    "type" VARCHAR(255) NOT NULL,
     "year" VARCHAR(4) NOT NULL,
     "month" VARCHAR(2) NOT NULL,
     "day" VARCHAR(2) NOT NULL,
@@ -486,11 +490,13 @@ CREATE TABLE "subscriptions" (
     "id" UUID NOT NULL,
     "organization_id" UUID NOT NULL,
     "plan_id" TEXT NOT NULL,
-    "status" TEXT NOT NULL,
+    "status" "subscription_status" NOT NULL,
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3),
     "current_period_start" TIMESTAMP(3) NOT NULL,
     "current_period_end" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "subscriptions_pkey" PRIMARY KEY ("id")
 );
@@ -502,9 +508,9 @@ CREATE TABLE "transactions" (
     "plan_id" TEXT NOT NULL,
     "payment_amount" DOUBLE PRECISION NOT NULL,
     "payment_date" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "subscription_plansId" UUID,
+    "status" "transaction_status" NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("id")
 );
@@ -512,14 +518,14 @@ CREATE TABLE "transactions" (
 -- CreateTable
 CREATE TABLE "media" (
     "id" UUID NOT NULL,
-    "name" VARCHAR NOT NULL,
-    "path" VARCHAR NOT NULL,
-    "url" VARCHAR NOT NULL,
-    "mimetype" VARCHAR NOT NULL,
-    "model_name" VARCHAR,
+    "name" VARCHAR(255) NOT NULL,
+    "path" VARCHAR(255) NOT NULL,
+    "url" VARCHAR(255) NOT NULL,
+    "mimetype" VARCHAR(255) NOT NULL,
+    "model_name" VARCHAR(255),
     "model_id" UUID,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "media_pkey" PRIMARY KEY ("id")
 );
@@ -727,6 +733,3 @@ ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_organization_id_fkey" 
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_subscription_id_fkey" FOREIGN KEY ("subscription_id") REFERENCES "subscriptions"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "transactions" ADD CONSTRAINT "transactions_subscription_plansId_fkey" FOREIGN KEY ("subscription_plansId") REFERENCES "subscription_plans"("id") ON DELETE SET NULL ON UPDATE CASCADE;
