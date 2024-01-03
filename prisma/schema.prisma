@@ -570,3 +570,15 @@ model transactions {
   subscription_plans   subscription_plans? @relation(fields: [subscription_plansId], references: [id])
   subscription_plansId String?             @db.Uuid
 }
+
+model media {
+  id         String   @id @db.Uuid
+  name       String   @db.VarChar()
+  path       String   @db.VarChar()
+  url        String   @db.VarChar()
+  mimetype   String   @db.VarChar()
+  model_name String?  @db.VarChar()
+  model_id   String?  @db.Uuid
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

@@ -509,6 +509,21 @@ CREATE TABLE "transactions" (
     CONSTRAINT "transactions_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "media" (
+    "id" UUID NOT NULL,
+    "name" VARCHAR NOT NULL,
+    "path" VARCHAR NOT NULL,
+    "url" VARCHAR NOT NULL,
+    "mimetype" VARCHAR NOT NULL,
+    "model_name" VARCHAR,
+    "model_id" UUID,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "media_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
